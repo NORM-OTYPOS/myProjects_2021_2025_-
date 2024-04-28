@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeDrive Guardian</title>
+
+    <!-- Load Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-zzoCdNQcO0WhPwUio09ZcLtsli9QyZXxuJef5v99RZwB3bDWNSAj3Fu7EG+l3NYNtz+WTOy8xPTB0C3OIMyA6Q==" crossorigin="anonymous" />
+
+    <!-- Inline CSS -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        nav {
+            background-color: #007bff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-brand {
+            color: #fff;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .navbar-brand:hover {
+            color: #f8f9fa;
+        }
+
+        .navbar-icons {
+            color: #fff;
+            font-size: 1.4rem;
+            display: flex;
+            gap: 20px;
+        }
+
+        .navbar-icons i:hover {
+            color: #f8f9fa;
+        }
+
+        #map {
+            height: calc(100vh - 60px); 
+            width: 100%;
+        }
+
+        .container {
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" class="navbar-brand">SafeDrive Guardian</a>
+        <div class="navbar-icons">
+            <i class="fas fa-search"></i>
+            <i class="fas fa-user"></i>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Find Your Location</h1>
+        <div id="map"></div>
+        <p class="error-message" id="error-message"></p>
+    </div>
+
+    <!-- Load Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <!-- JavaScript -->
+    <script>
+        var map = L.map('map').setView([51.505, -0.09], 13); // Set initial view coordinates
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19,
+            subdomains: ["a", "b", "c"] // Added subdomains for resiliency
+        }).addTo(map);
+
+        var jsonData = {
+            "flowSegmentData": {
+                "coordinates": {
+                    "coordinate": [
+                        {
+                            "latitude": 13.032018126960027,
+                            "longitude": 80.21174219907533
+                        },
+                        {
+                            "latitude": 13.032105340044621,
+                            "longitude": 80.2111454075694
+                        },
+                        {
+                            "latitude": 13.032117344090397,
+                            "longitude": 80.21106225908989
+                        },
+                        {
+                            "latitude": 13.032124121884687,
+                            "longitude": 80.21101397932762
+                        },
+                        {
+                            "latitude": 13.032169688255882,
+                            "longitude": 80.2106961375593
+                        },
+                        {
+                            "latitude": 13.032235424672697,
+                            "longitude": 80.21024418534017
+                        },
+                        {
+                            "latitude": 13.032311858546572,
+                            "longitude": 80.2097117668506
+                        },
+                        {
+                            "latitude": 13.032251511718615,
+                            "longitude": 80.20970237911905
+                        },
+                        {
+                            "latitude": 13.032217949403375,
+                            "longitude": 80.20970103801454
+                        },
+                        {
+                            "latitude": 13.032179079173645,
+                            "longitude": 80.20969701470102
+                        }
+                    ]
+                }
+            }
+        };
+
+        jsonData.flowSegmentData.coordinates.coordinate.forEach(coordinate => {
+            
+            L.marker([coordinate.latitude, coordinate.longitude]).addTo(map);
+        });
+
+        var marker, circle, zoomed = false;
+
+        navigator.geolocation.watchPosition(success, error);
+
+        function success(pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude; 
+            const accuracy = pos.coords.accuracy;
+
+            if (marker) {
+                map.removeLayer(marker);
+                map.removeLayer(circle);
+            }
+
+            marker = L.marker([lat, lng]).addTo(map);
+            circle = L.circle([lat, lng], {radius: accuracy}).addTo(map);
+
+            if (!zoomed) {
+                map.fitBounds(circle.getBounds());
+                zoomed = true; 
+            }
+        }
+
+        function error(err) {
+            var errorMessage = document.getElementById('error-message');
+            if (err.code === 1) {
+                errorMessage.innerText = "Please allow geolocation access";
+            } else {
+                errorMessage.innerText = "Cannot get current location"; 
+            }
+        }
+    </script>
+</body>
+</html>
