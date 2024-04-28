@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+        }
+
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px; /* Adjust max-width as needed */
+        }
+
+        form label {
+            width: 40%; /* Adjust label width as needed */
+        }
+
+        form input,
+        form select {
+            width: 55%; /* Adjust input/select width as needed */
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        #output {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #output img {
+            width: 100%; /* Adjust image width as needed */
+            max-width: 400px; /* Adjust image max-width as needed */
+        }
+    </style>
+</head>
+<body>
+    <h1>Financial Assistant</h1>
+
+    <form id="commandForm">
+        <label for="ticker">Stock Ticker:</label>
+        <input type="text" id="ticker" name="ticker" required><br><br>
+        
+        <label for="amount">Amount of Stock:</label>
+        <input type="number" id="amount" name="amount" required><br><br>
+        
+        <label for="starting_date">Starting Date:</label>
+        <input type="date" id="starting_date" name="starting_date" required><br><br>
+
+        <label for="command">Command:</label>
+        <select id="command" name="command" required>
+            <option value="add_portfolio">Add Stock</option>
+            <option value="remove_portfolio">Remove Stock</option>
+            <option value="show_portfolio">Show Portfolio</option>
+            <option value="portfolio_worth">Portfolio Worth</option>
+            <option value="plot_chart">Plot Chart</option>
+            <option value="portfolio_gains">Portfolio Gains</option>
+            <option value="bye">Exit</option>
+        </select><br><br>
+        
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="output"></div>
+
+    <script>
+        document.getElementById('commandForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const command = formData.get('command');
+
+            fetch('/execute_command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(Object.fromEntries(formData.entries())), // Convert form data to JSON
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle different commands
+                if (command === 'show_portfolio') {
+                    document.getElementById('output').innerText = data;
+                } else if (command === 'portfolio_worth') {
+                    document.getElementById('output').innerText = data;
+                } else if (command === 'plot_chart') {
+                    const chartImg = document.createElement('img');
+                    chartImg.src = data.chart_filename;
+                    document.getElementById('output').appendChild(chartImg);
+                } else if (command === 'portfolio_gains') {
+                    document.getElementById('output').innerText = data;
+                } else {
+                    document.getElementById('output').innerText = data;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('output').innerText = 'great check the code, if not updated there is an error happy solving';
+            });
+        });
+    </script>
