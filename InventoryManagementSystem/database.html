@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Dashboard</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .low {
+            color: red;
+            font-weight: bold;
+        }
+        .navbar {
+            background-color: #1e90ff; /* Updated blue color for the navbar */
+        }
+        .card-header {
+            background-color: #1e90ff; /* Updated blue color for the card header */
+            color: #fff; /* White text color */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Inventory Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Inventory</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Serial No.</th>
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTable">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Sample inventory data
+        const inventory = [
+            { serialNo: '001', name: 'Raw Material A', quantity: 20 },
+            { serialNo: '002', name: 'Raw Material B', quantity: 5 },
+            { serialNo: '003', name: 'Raw Material C', quantity: 15 },
+            { serialNo: '004', name: 'Raw Material D', quantity: 8 }
+        ];
+
+        // Threshold value for low quantity
+        const lowThreshold = 10;
+
+        // Function to create a table row for an inventory item
+        function createInventoryRow(item) {
+            const row = document.createElement('tr');
+
+            const serialNoCell = document.createElement('td');
+            serialNoCell.textContent = item.serialNo;
+            row.appendChild(serialNoCell);
+
+            const nameCell = document.createElement('td');
+            nameCell.textContent = item.name;
+            row.appendChild(nameCell);
+
+            const quantityCell = document.createElement('td');
+            quantityCell.textContent = item.quantity;
+            row.appendChild(quantityCell);
+
+            const statusCell = document.createElement('td');
+            const status = item.quantity < lowThreshold ? 'Low' : 'High';
+            statusCell.textContent = status;
+            if (status === 'Low') {
+                statusCell.classList.add('low');
+            }
+            row.appendChild(statusCell);
+
+            return row;
+        }
+
+        // Add inventory items to the table initially
+        const inventoryTable = document.getElementById('inventoryTable');
+        inventory.forEach(item => {
+            const row = createInventoryRow(item);
+            inventoryTable.appendChild(row);
+        });
+    </script>
+</body>
+</html>
